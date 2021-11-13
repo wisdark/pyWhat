@@ -1,47 +1,101 @@
+import glob
 import os.path
-from typing import List, Optional
+from typing import Callable, Optional
 
-from pywhat.distribution import Distribution
-from pywhat.magic_numbers import FileSignatures
-from pywhat.nameThatHash import Nth
+import pywhat.magic_numbers
+from pywhat.filter import Distribution, Filter
+from pywhat.helper import Keys
 from pywhat.regex_identifier import RegexIdentifier
 
 
 class Identifier:
-    def __init__(self, distribution: Optional[Distribution] = None):
-        if distribution is None:
-            self.distribution = Distribution()
-        else:
-            self.distribution = distribution
+    def __init__(
+        self,
+        *,
+        dist: Optional[Distribution] = None,
+        key=Keys.NONE,
+        reverse=False,
+        boundaryless: Optional[Filter] = None,
+    ):
+        self.distribution = Distribution() if dist is None else dist
+        self.boundaryless = (
+            Filter({"Tags": []}) if boundaryless is None else boundaryless
+        )
         self._regex_id = RegexIdentifier()
-        self._file_sig = FileSignatures()
-        self._name_that_hash = Nth()
+        self._key = key
+        self._reverse = reverse
 
-    def identify(self, text: str, dist: Distribution = None,
-                 api=False) -> dict:
+    def identify(
+        self,
+        text: str,
+        *,
+        only_text=True,
+        dist: Distribution = None,
+        key: Optional[Callable] = None,
+        reverse: Optional[bool] = None,
+        boundaryless: Optional[Filter] = None,
+        include_filenames=False,
+    ) -> dict:
         if dist is None:
             dist = self.distribution
-        identify_obj = {}
+        if key is None:
+            key = self._key
+        if reverse is None:
+            reverse = self._reverse
+        if boundaryless is None:
+            boundaryless = self.boundaryless
 
-        magic_numbers = None
-        if not api and self._file_exists(text):
-            magic_numbers = self._file_sig.open_binary_scan_magic_nums(text)
-            text = self._file_sig.open_file_loc(text)
-            identify_obj["File Signatures"] = magic_numbers
+        identify_obj: dict = {"File Signatures": {}, "Regexes": {}}
+        search = []
+
+        if not only_text and os.path.isdir(text):
+            # if input is a directory, recursively search for all of the files
+            for myfile in glob.iglob(text + "/**", recursive=True):
+                if os.path.isfile(myfile):
+                    search.append(os.path.abspath(myfile))
         else:
-            text = [text]
+            search = [text]
 
-        if not magic_numbers:
-            # If file doesn't exist, check to see if the inputted text is
-            # a file in hex format
-            identify_obj["File Signatures"] = self._file_sig.check_magic_nums(text)
+        for string in search:
+            if not only_text and os.path.isfile(string):
+                if os.path.isdir(text):
+                    short_name = string.replace(os.path.abspath(text), "")
+                else:
+                    short_name = os.path.basename(string)
 
-        identify_obj["Regexes"] = self._regex_id.check(text, dist)
+                magic_numbers = pywhat.magic_numbers.get_magic_nums(string)
+                with open(string, "r", encoding="utf-8", errors="ignore") as file:
+                    contents = [file.read()]
 
-        # get_hashes takes a list of hashes, we split to give it a list
-        # identify_obj["Hashes"] = self._name_that_hash.get_hashes(text.split())
+                if include_filenames:
+                    contents.append(os.path.basename(string))
+
+                regex = self._regex_id.check(
+                    contents, dist=dist, boundaryless=boundaryless
+                )
+
+                if not magic_numbers:
+                    magic_numbers = pywhat.magic_numbers.check_magic_nums(string)
+
+                if magic_numbers:
+                    identify_obj["File Signatures"][short_name] = magic_numbers
+            else:
+                short_name = "text"
+                regex = self._regex_id.check(
+                    search, dist=dist, boundaryless=boundaryless
+                )
+
+            if regex:
+                identify_obj["Regexes"][short_name] = regex
+
+        for key_, value in identify_obj.items():
+            # if there are zero regex or file signature matches, set it to None
+            if not value:
+                identify_obj[key_] = None
+
+        if key != Keys.NONE:
+            identify_obj["Regexes"][short_name] = sorted(
+                identify_obj["Regexes"][short_name], key=key, reverse=reverse
+            )
 
         return identify_obj
-
-    def _file_exists(self, text):
-        return os.path.isfile(text)

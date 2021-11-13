@@ -1,13 +1,13 @@
 """Nox sessions."""
-import tempfile
+from os import environ
 from typing import Any
 
 import nox
 from nox.sessions import Session
 
-
-package = "hypermodern_python"
-nox.options.sessions = "lint", "tests"
+nox.options.sessions = ["tests"]
+if environ.get("CI", None) == "true":
+    nox.options.sessions.append("coverage")
 locations = "src", "tests", "noxfile.py", "docs/conf.py"
 
 
@@ -36,39 +36,26 @@ def install_with_constraints(session: Session, *args: str, **kwargs: Any) -> Non
     session.install("--constraint=requirements.txt", *args, **kwargs)
 
 
-@nox.session(python="3.8")
-def black(session: Session) -> None:
-    """Run black code formatter."""
-    args = session.posargs or locations
-    install_with_constraints(session, "black")
-    session.run("black", *args)
-
-
-@nox.session(python=["3.8", "3.7"])
-def lint(session: Session) -> None:
-    pass
-
-
-@nox.session(python=["3.8", "3.7"])
+@nox.session
 def tests(session: Session) -> None:
     """Run the test suite."""
     session.run("poetry", "install", "--no-dev", external=True)
-    install_with_constraints(session, "pytest")
-    session.run("pytest")
+    install_with_constraints(
+        session,
+        "pytest",
+        "pytest-black",
+        "pytest-cov",
+        "pytest-isort",
+        "pytest-flake8",
+        "pytest-mypy",
+        "types-requests",
+        "types-orjson",
+    )
+    session.run("pytest", "--cov=./", "--cov-report=xml")
 
 
-@nox.session(python=["3.8", "3.7"])
-def typeguard(session: Session) -> None:
-    """Runtime type checking using Typeguard."""
-    args = session.posargs or ["-m", "not e2e"]
-    session.run("poetry", "install", "--no-dev", external=True)
-    install_with_constraints(session, "pytest", "pytest-mock", "typeguard")
-    session.run("pytest", f"--typeguard-packages={package}", *args)
-
-
-@nox.session(python="3.8")
+@nox.session
 def coverage(session: Session) -> None:
     """Upload coverage data."""
-    install_with_constraints(session, "coverage[toml]", "codecov")
-    session.run("coverage", "xml", "--fail-under=50")
-    session.run("codecov", *session.posargs)
+    install_with_constraints(session, "codecov")
+    session.run("codecov", "--env", "OS", "PYTHON")
