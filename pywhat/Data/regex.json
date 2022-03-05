@@ -820,35 +820,6 @@
       }
    },
    {
-      "Name": "Datadog API Key",
-      "Regex": "^([a-f0-9]{32})$",
-      "plural_name": false,
-      "Description": null,
-      "Exploit": "Use the command below to verify that the API key is valid:\n  $ curl -X GET https://api.datadoghq.com/api/v1/validate -H \"Content-Type: application/json\" -H \"DD-API-KEY: API_KEY_HERE\"\n",
-      "Rarity": 1,
-      "URL": null,
-      "Tags": [
-         "API Keys",
-         "Bug Bounty",
-         "Credentials",
-         "Datadog"
-      ]
-   },
-   {
-      "Name": "Datadog Client Token",
-      "Regex": "^(pub[a-f0-9]{32})$",
-      "plural_name": false,
-      "Description": null,
-      "Exploit": null,
-      "Rarity": 1,
-      "URL": null,
-      "Tags": [
-         "API Keys",
-         "Bug Bounty",
-         "Datadog"
-      ]
-   },
-   {
       "Name": "New Relic Admin API Key",
       "Regex": "(?i)^(NRAA-[a-f0-9]{27})$",
       "plural_name": false,
@@ -1572,6 +1543,24 @@
          "Invalid": [
             "email@example@example.com"
          ]
+      }
+   },
+   {
+      "Name": "Italian Fiscal Code",
+      "Regex": "^([A-Za-z]{6}[0-9]{2}[ABCDEHLMPSTabcdehlmpst]{1}[0-9]{2}[A-Za-z]{1}[0-9]{3}[A-Za-z]{1})$",
+      "plural_name": false,
+      "Description": null,
+      "Rarity": 0.5,
+      "URL": null,
+      "Tags": [
+         "Identifiers",
+         "Credentials"
+      ],
+      "Examples": {
+         "Valid": [
+            "RSSMRA00A01H501C"
+         ],
+         "Invalid": []
       }
    },
    {
@@ -2375,8 +2364,28 @@
       }
    },
    {
+      "Name": "Datadog Client Token",
+      "Regex": "^(pub[a-f0-9]{32})$",
+      "plural_name": false,
+      "Description": null,
+      "Exploit": null,
+      "Rarity": 0.3,
+      "URL": null,
+      "Tags": [
+         "API Keys",
+         "Bug Bounty",
+         "Datadog"
+      ],
+      "Examples": {
+         "Valid": [
+            "pub8261e4a07b29d0a148e00a93106ae711"
+         ],
+         "Invalid": []
+      }
+   },
+   {
       "Name": "JSON Web Token (JWT)",
-      "Regex": "(?i)^((?=.*[a-z])(?=.*[0-9])(?:[a-z0-9_=]+\\.){2}(?:[a-z0-9_\\-\\+\\/=]*))$",
+      "Regex": "(?i)^((?=eyJ)(?:[a-z0-9_=\\-]{17,})\\.(?=e)(?:[a-z0-9_=\\-]{2,})\\.(?:[a-z0-9_=\\-]{43,}))$",
       "plural_name": false,
       "Description": null,
       "Rarity": 0.2,
@@ -2389,9 +2398,16 @@
       ],
       "Examples": {
          "Valid": [
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+            "eyJhbGciOiJIUzI1NiJ9.e30.4E_Bsx-pJi3kOW9wVXN8CgbATwP09D9V5gxh9-9zSZ0",
+            "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.PyaQAiuwn6CTGq4ZQCTbXIs4GnRT7bBBFohNBlNdwTJQvGEIxKjecJITFjaPuxEG",
+            "eyJhbGciOiJSUzI1NiJ9.e30.FjtlcmF6eO07ju98u-Q2ATYiKzeIeY_uqQNOdEcuDH4gnatGms_DzBmrFfnZh0qsS_kPZmmyEfpj3gYPCblwLLNIRjYTWNyWh9IUfxKSkdcU9rlnDzhjF8ygt5fQ2PS9o37Lf-b69i68u3VZPxSce9jsmhzLk3k8G8-LNAa2umfn2ScwmD5IR_OsmlrBCN2e0MjQOJJ8eciQrflsdLm04eAWBGV2fb0kyRwqqZpTmPl723rZs9Wz_B5rvg67-W4GsTydS23IYfg9poqlaOXbZB7X-m7Qp_vbVHYIx4LgrHEjjrepgiYs-l9my-BiRfQHEoZZDXjs_EwH2xDWVNN0Bg"
          ],
-         "Invalid": []
+         "Invalid": [
+            "C8.M.",
+            "yaJhbGciOiJIUzI1NiJ9.e30.4E_Bsx-pJi3kOW9wVXN8CgbATwP09D9V5gxh9-9zSZ0",
+            "eyJhbGciOiJIUzI1NiJ+9.e3/0.4E_Bsx-pJi3kOW9wVXN8CgbATwP09D9V5gxh9-9zSZ0"
+         ]
       }
    },
    {
@@ -2619,6 +2635,58 @@
             "01ERJ58HMWDN3VTRRHZQV2T5R5"
          ],
          "Invalid": []
+      }
+   },
+   {
+      "Name": "Datadog API Key",
+      "Regex": "^([a-f0-9]{32})$",
+      "plural_name": false,
+      "Description": null,
+      "Exploit": "Use the command below to verify that the API key is valid:\n  $ curl -X GET https://api.datadoghq.com/api/v1/validate -H \"Content-Type: application/json\" -H \"DD-API-KEY: API_KEY_HERE\"\n",
+      "Rarity": 0,
+      "URL": null,
+      "Tags": [
+         "API Keys",
+         "Bug Bounty",
+         "Credentials",
+         "Datadog"
+      ],
+      "Examples": {
+         "Valid": [
+            "68ec0cbd7d0da6770545614dfa573eec",
+            "683bba7d7f759e0907d35f39a7c36eb5",
+            "c8561e9b786a07855cbc2983d47eaf93"
+         ],
+         "Invalid": [
+            "ba36266055c7495ce26bb12e86c7536b4a5e00cd",
+            "pub8261e4a07b29d0a148e00a93106ae711"
+         ]
+      }
+   },
+   {
+      "Name": "Datadog Application Key",
+      "Regex": "^([a-f0-9]{40})$",
+      "plural_name": false,
+      "Description": null,
+      "Exploit": null,
+      "Rarity": 0,
+      "URL": null,
+      "Tags": [
+         "API Keys",
+         "Bug Bounty",
+         "Credentials",
+         "Datadog"
+      ],
+      "Examples": {
+         "Valid": [
+            "ba36266055c7495ce26bb12e86c7536b4a5e00cd"
+         ],
+         "Invalid": [
+            "68ec0cbd7d0da6770545614dfa573eec",
+            "683bba7d7f759e0907d35f39a7c36eb5",
+            "c8561e9b786a07855cbc2983d47eaf93",
+            "pub8261e4a07b29d0a148e00a93106ae711"
+         ]
       }
    },
    {
